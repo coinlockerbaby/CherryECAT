@@ -21,3 +21,4 @@ build
 *.Bak
 *.uvguix.*
 *.scvd
+*.idx
