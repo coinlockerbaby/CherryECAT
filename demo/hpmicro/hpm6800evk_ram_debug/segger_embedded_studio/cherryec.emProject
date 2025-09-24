@@ -1,0 +1,440 @@
+<!DOCTYPE CrossStudio_Project_File>
+<solution Name="cherryec" target="20" version="2">
+  <project Name="cherryec - hpm6800evk">
+    <configuration
+      Name="Common"
+      LIBRARY_IO_TYPE="STD"
+      arm_linker_heap_size="0x4000"
+      arm_linker_stack_size="0x4000"
+      arm_rtl_variant="SEGGER"
+      arm_linker_no_warn_on_mismatch="Yes"
+      build_generic_options_file_name=""
+      c_user_include_directories="../../../../../../hpm_env/sdk_env/hpm_sdk/arch;../../../../../../hpm_env/sdk_env/hpm_sdk/arch/riscv/l1c;../../../../../../hpm_env/sdk_env/hpm_sdk/boards/hpm6800evk;../../../../../../hpm_env/sdk_env/hpm_sdk/soc/HPM6800/HPM6880;../../../../../../hpm_env/sdk_env/hpm_sdk/soc/HPM6800/ip;../../../../../../hpm_env/sdk_env/hpm_sdk/soc/HPM6800/HPM6880/toolchains;../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/inc;../../../../../../hpm_env/sdk_env/hpm_sdk/utils;../../../../../../hpm_env/sdk_env/hpm_sdk/components/enet_phy;../../../../../../hpm_env/sdk_env/hpm_sdk/components/enet_phy/rtl8211;../../../../../../hpm_env/sdk_env/hpm_sdk/components/enet_phy;../../../../../../hpm_env/sdk_env/hpm_sdk/components/debug_console;../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/FreeRTOS/Source/include;../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/cherrysh;../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/cherrysh/port/hpm/freertos_uart/inc;../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/cherryrb;../build_tmp/generated/include;../..;../../inc;../../../../include;../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/FreeRTOS/Source/portable/GCC/RISC-V;../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/FreeRTOS/Source/portable/GCC/RISC-V/chip_specific_extensions/HPMicro;../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/FreeRTOS/Source/portable/GCC/RISC-V;"
+      link_linker_script_file="..\..\..\..\..\..\hpm_env\sdk_env\hpm_sdk\soc\HPM6800\HPM6880\toolchains\segger\ram.icf"
+      link_use_linker_script_file="Yes"
+      linker_output_format="hex"
+      project_directory=""
+      project_type="Executable"
+      debug_target_connection="GDB Server"
+      gdb_server_type="Custom"
+      gdb_server_reset_command="reset halt"
+      gdb_server_autostart_server="Yes"
+      gdb_server_port="3333"
+      gdb_server_command_line="C:/Env/hpm_env/sdk_env/tools/openocd/openocd.exe -f $(ProjectDir)/../../../../../../hpm_env/sdk_env/hpm_sdk/boards/openocd/probes/ft2232.cfg -f $(ProjectDir)/../../../../../../hpm_env/sdk_env/hpm_sdk/boards/openocd/soc/hpm6880.cfg -f $(ProjectDir)/../../../../../../hpm_env/sdk_env/hpm_sdk/boards/openocd/boards/hpm6800evk.cfg"
+      target_device_name="HPM6880xBDx"
+      linker_output_format="bin"
+      post_build_command="&quot;$(OBJDUMP)&quot; -S -d &quot;$(OutDir)/demo$(EXE)&quot; &gt; &quot;$(OutDir)/demo.asm&quot;"
+      heap_size="0x4000"
+      stack_size="0x4000"
+      RISCV_TOOLCHAIN_VARIANT="Standard"
+      rv_abi="ilp32"
+      rv_architecture="rv32imac"
+      c_additional_options="-Wall;-Wundef;-Wno-format;-fomit-frame-pointer;-fno-builtin;-ffunction-sections;-fdata-sections;-g"
+      rv_arch_ext=""
+      rv_arch_zicsr="Yes"
+      rv_arch_zifencei="Yes"
+      rv_debug_extensions="None"
+      rv_toolchain_prefix=""
+      gcc_cplusplus_language_standard="c++11"
+      libcxx="Yes"
+      build_output_file_name="$(OutDir)/demo$(EXE)"
+      linker_printf_fp_enabled="Float"
+      linker_printf_fmt_level="int"
+      linker_printf_wchar_enabled="No"
+      linker_printf_width_precision_supported="Yes"
+      linker_scanf_fp_enabled="No"
+      linker_scanf_fmt_level="int"
+      linker_scanf_character_group_matching_enabled="No"
+      gcc_enable_all_warnings="Yes"
+      gcc_all_warnings_command_line_options="-Wall;-Wextra;-Wno-format"
+      arm_compiler_variant="gcc"
+      arm_assembler_variant="SEGGER"
+      arm_linker_variant="SEGGER"
+      />
+
+  <folder Name="application">
+    <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/application"/>
+    <file file_name="..\..\main.c">
+      <configuration Name="Common" build_object_file_name="$(IntDir)/main.c$(OBJ)" />
+    </file>
+    <folder Name="Env">
+      <folder Name="cherryECAT">
+        <folder Name="CherryECAT">
+          <folder Name="src">
+            <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/application/Env/cherryECAT/CherryECAT/src"/>
+            <file file_name="..\..\..\..\src\ec_cmd.c">
+              <configuration Name="Common" build_object_file_name="$(IntDir)/ec_cmd.c$(OBJ)" />
+            </file>
+            <file file_name="..\..\..\..\src\ec_coe.c">
+              <configuration Name="Common" build_object_file_name="$(IntDir)/ec_coe.c$(OBJ)" />
+            </file>
+            <file file_name="..\..\..\..\src\ec_common.c">
+              <configuration Name="Common" build_object_file_name="$(IntDir)/ec_common.c$(OBJ)" />
+            </file>
+            <file file_name="..\..\..\..\src\ec_datagram.c">
+              <configuration Name="Common" build_object_file_name="$(IntDir)/ec_datagram.c$(OBJ)" />
+            </file>
+            <file file_name="..\..\..\..\src\ec_mailbox.c">
+              <configuration Name="Common" build_object_file_name="$(IntDir)/ec_mailbox.c$(OBJ)" />
+            </file>
+            <file file_name="..\..\..\..\src\ec_master.c">
+              <configuration Name="Common" build_object_file_name="$(IntDir)/ec_master.c$(OBJ)" />
+            </file>
+            <file file_name="..\..\..\..\src\ec_netdev.c">
+              <configuration Name="Common" build_object_file_name="$(IntDir)/ec_netdev.c$(OBJ)" />
+            </file>
+            <file file_name="..\..\..\..\src\ec_perf.c">
+              <configuration Name="Common" build_object_file_name="$(IntDir)/ec_perf.c$(OBJ)" />
+            </file>
+            <file file_name="..\..\..\..\src\ec_sii.c">
+              <configuration Name="Common" build_object_file_name="$(IntDir)/ec_sii.c$(OBJ)" />
+            </file>
+            <file file_name="..\..\..\..\src\ec_slave.c">
+              <configuration Name="Common" build_object_file_name="$(IntDir)/ec_slave.c$(OBJ)" />
+            </file>
+          </folder>
+          <folder Name="osal">
+            <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/application/Env/cherryECAT/CherryECAT/osal"/>
+            <file file_name="..\..\..\..\osal\ec_osal_freertos.c">
+              <configuration Name="Common" build_object_file_name="$(IntDir)/ec_osal_freertos.c$(OBJ)" />
+            </file>
+          </folder>
+          <folder Name="port">
+            <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/application/Env/cherryECAT/CherryECAT/port"/>
+            <file file_name="..\..\..\..\port\netdev_hpm.c">
+              <configuration Name="Common" build_object_file_name="$(IntDir)/netdev_hpm.c$(OBJ)" />
+            </file>
+          </folder>
+        </folder>
+      </folder>
+    </folder>
+  </folder>
+  <folder Name="soc">
+    <folder Name="HPM6800">
+      <folder Name="HPM6880">
+        <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/soc/HPM6800/HPM6880"/>
+        <folder Name="toolchains">
+          <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/soc/HPM6800/HPM6880/toolchains"/>
+          <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/soc/HPM6800/HPM6880/toolchains/reset.c">
+            <configuration Name="Common" build_object_file_name="$(IntDir)/reset.c$(OBJ)" />
+          </file>
+          <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/soc/HPM6800/HPM6880/toolchains/trap.c">
+            <configuration Name="Common" build_object_file_name="$(IntDir)/trap.c$(OBJ)" />
+          </file>
+          <folder Name="segger">
+            <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/soc/HPM6800/HPM6880/toolchains/segger"/>
+            <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/soc/HPM6800/HPM6880/toolchains/segger/startup.s">
+              <configuration Name="Common" build_object_file_name="$(IntDir)/startup.s$(OBJ)" />
+            </file>
+          </folder>
+        </folder>
+        <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/soc/HPM6800/HPM6880/system.c">
+          <configuration Name="Common" build_object_file_name="$(IntDir)/system.c$(OBJ)" />
+        </file>
+        <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/soc/HPM6800/HPM6880/hpm_sysctl_drv.c">
+          <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_sysctl_drv.c$(OBJ)" />
+        </file>
+        <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/soc/HPM6800/HPM6880/hpm_clock_drv.c">
+          <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_clock_drv.c$(OBJ)" />
+        </file>
+        <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/soc/HPM6800/HPM6880/hpm_otp_drv.c">
+          <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_otp_drv.c$(OBJ)" />
+        </file>
+      </folder>
+    </folder>
+  </folder>
+  <folder Name="middleware">
+    <folder Name="FreeRTOS">
+      <folder Name="Source">
+        <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/middleware/FreeRTOS/Source"/>
+        <folder Name="portable">
+          <folder Name="GCC">
+            <folder Name="RISC-V">
+              <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/middleware/FreeRTOS/Source/portable/GCC/RISC-V"/>
+              <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/FreeRTOS/Source/portable/GCC/RISC-V/port.c">
+                <configuration Name="Common" build_object_file_name="$(IntDir)/port.c$(OBJ)" />
+              </file>
+              <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/FreeRTOS/Source/portable/GCC/RISC-V/portASM.S">
+                <configuration Name="Common" build_object_file_name="$(IntDir)/portASM.S$(OBJ)" />
+              </file>
+              <folder Name="chip_specific_extensions">
+                <folder Name="HPMicro">
+                  <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/middleware/FreeRTOS/Source/portable/GCC/RISC-V/chip_specific_extensions/HPMicro"/>
+                  <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/FreeRTOS/Source/portable/GCC/RISC-V/chip_specific_extensions/HPMicro/hpm_port.c">
+                    <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_port.c$(OBJ)" />
+                  </file>
+                </folder>
+              </folder>
+            </folder>
+          </folder>
+          <folder Name="MemMang">
+            <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/middleware/FreeRTOS/Source/portable/MemMang"/>
+            <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/FreeRTOS/Source/portable/MemMang/heap_4.c">
+              <configuration Name="Common" build_object_file_name="$(IntDir)/heap_4.c$(OBJ)" />
+            </file>
+          </folder>
+        </folder>
+        <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/FreeRTOS/Source/croutine.c">
+          <configuration Name="Common" build_object_file_name="$(IntDir)/croutine.c$(OBJ)" />
+        </file>
+        <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/FreeRTOS/Source/list.c">
+          <configuration Name="Common" build_object_file_name="$(IntDir)/list.c$(OBJ)" />
+        </file>
+        <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/FreeRTOS/Source/queue.c">
+          <configuration Name="Common" build_object_file_name="$(IntDir)/queue.c$(OBJ)" />
+        </file>
+        <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/FreeRTOS/Source/stream_buffer.c">
+          <configuration Name="Common" build_object_file_name="$(IntDir)/stream_buffer.c$(OBJ)" />
+        </file>
+        <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/FreeRTOS/Source/tasks.c">
+          <configuration Name="Common" build_object_file_name="$(IntDir)/tasks.c$(OBJ)" />
+        </file>
+        <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/FreeRTOS/Source/timers.c">
+          <configuration Name="Common" build_object_file_name="$(IntDir)/timers.c$(OBJ)" />
+        </file>
+        <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/FreeRTOS/Source/event_groups.c">
+          <configuration Name="Common" build_object_file_name="$(IntDir)/event_groups.c$(OBJ)" />
+        </file>
+      </folder>
+    </folder>
+    <folder Name="cherrysh">
+      <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/middleware/cherrysh"/>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/cherrysh/chry_shell.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/chry_shell.c$(OBJ)" />
+      </file>
+      <folder Name="builtin">
+        <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/middleware/cherrysh/builtin"/>
+        <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/cherrysh/builtin/help.c">
+          <configuration Name="Common" build_object_file_name="$(IntDir)/help.c$(OBJ)" />
+        </file>
+        <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/cherrysh/builtin/shsize.c">
+          <configuration Name="Common" build_object_file_name="$(IntDir)/shsize.c$(OBJ)" />
+        </file>
+        <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/cherrysh/builtin/login.c">
+          <configuration Name="Common" build_object_file_name="$(IntDir)/login.c$(OBJ)" />
+        </file>
+      </folder>
+      <folder Name="port">
+        <folder Name="hpm">
+          <folder Name="freertos_uart">
+            <folder Name="src">
+              <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/middleware/cherrysh/port/hpm/freertos_uart/src"/>
+              <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/cherrysh/port/hpm/freertos_uart/src/shell.c">
+                <configuration Name="Common" build_object_file_name="$(IntDir)/shell.c$(OBJ)" />
+              </file>
+            </folder>
+          </folder>
+        </folder>
+      </folder>
+    </folder>
+    <folder Name="cherryrb">
+      <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/middleware/cherryrb"/>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/middleware/cherryrb/chry_ringbuffer.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/chry_ringbuffer.c$(OBJ)" />
+      </file>
+    </folder>
+  </folder>
+  <folder Name="arch">
+    <folder Name="riscv">
+      <folder Name="l1c">
+        <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/arch/riscv/l1c"/>
+        <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/arch/riscv/l1c/hpm_l1c_drv.c">
+          <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_l1c_drv.c$(OBJ)" />
+        </file>
+      </folder>
+    </folder>
+  </folder>
+  <folder Name="boards">
+    <folder Name="hpm6800evk">
+      <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/boards/hpm6800evk"/>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/boards/hpm6800evk/pinmux.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/pinmux.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/boards/hpm6800evk/board.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/board.c$(OBJ)" />
+      </file>
+    </folder>
+  </folder>
+  <folder Name="drivers">
+    <folder Name="src">
+      <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/drivers/src"/>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_uart_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_uart_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_sdp_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_sdp_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_lcdc_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_lcdc_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_i2c_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_i2c_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_pmp_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_pmp_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_rng_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_rng_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_gpio_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_gpio_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_spi_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_spi_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_pdma_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_pdma_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_gptmr_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_gptmr_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_pllctlv2_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_pllctlv2_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_usb_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_usb_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_rtc_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_rtc_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_i2s_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_i2s_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_dao_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_dao_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_pdm_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_pdm_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_vad_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_vad_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_cam_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_cam_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_jpeg_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_jpeg_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_enet_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_enet_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_sdxc_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_sdxc_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_adc16_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_adc16_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_pcfg_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_pcfg_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_ptpc_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_ptpc_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_mchtmr_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_mchtmr_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_ffa_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_ffa_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_tsns_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_tsns_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_crc_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_crc_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_mcan_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_mcan_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_dmav2_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_dmav2_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_ewdg_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_ewdg_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_pixelmux_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_pixelmux_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_gwc_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_gwc_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_lvb_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_lvb_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_lcb_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_lcb_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_smix_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_smix_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_mipi_dsi_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_mipi_dsi_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_mipi_dsi_phy_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_mipi_dsi_phy_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_mipi_csi_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_mipi_csi_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_mipi_csi_phy_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_mipi_csi_phy_drv.c$(OBJ)" />
+      </file>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/drivers/src/hpm_tamp_drv.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_tamp_drv.c$(OBJ)" />
+      </file>
+    </folder>
+  </folder>
+  <folder Name="utils">
+    <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/utils"/>
+    <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/utils/hpm_swap.c">
+      <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_swap.c$(OBJ)" />
+    </file>
+    <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/utils/hpm_ffssi.c">
+      <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_ffssi.c$(OBJ)" />
+    </file>
+    <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/utils/hpm_crc32.c">
+      <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_crc32.c$(OBJ)" />
+    </file>
+  </folder>
+  <folder Name="components">
+    <folder Name="enet_phy">
+      <folder Name="rtl8211">
+        <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/components/enet_phy/rtl8211"/>
+        <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/components/enet_phy/rtl8211/hpm_rtl8211.c">
+          <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_rtl8211.c$(OBJ)" />
+        </file>
+      </folder>
+    </folder>
+    <folder Name="debug_console">
+      <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/components/debug_console"/>
+      <file file_name="../../../../../../hpm_env/sdk_env/hpm_sdk/components/debug_console/hpm_debug_console.c">
+        <configuration Name="Common" build_object_file_name="$(IntDir)/hpm_debug_console.c$(OBJ)" />
+      </file>
+    </folder>
+  </folder>
+
+  </project>
+  <configuration
+    Name="Debug"
+    c_preprocessor_definitions="DEBUG"
+    gcc_debugging_level="Level 3"
+    gdb_server_allow_memory_access_during_execution="Yes"
+    gdb_server_ignore_checksum_errors="No"
+    gdb_server_register_access="General and Individual"
+    gcc_optimization_level="Level 2 balanced"
+  />
+  <configuration
+    Name="Release"
+    c_preprocessor_definitions="NDEBUG"
+    gcc_debugging_level="None"
+    gcc_omit_frame_pointer="Yes"
+    gcc_optimization_level="Level 2 balanced"
+  />
+  <configuration Name="Common"
+    c_preprocessor_definitions="HPMSOC_HAS_HPMSDK_GPIO=y;HPMSOC_HAS_HPMSDK_PLIC=y;HPMSOC_HAS_HPMSDK_MCHTMR=y;HPMSOC_HAS_HPMSDK_PLICSW=y;HPMSOC_HAS_HPMSDK_CRC=y;HPMSOC_HAS_HPMSDK_UART=y;HPMSOC_HAS_HPMSDK_I2C=y;HPMSOC_HAS_HPMSDK_SPI=y;HPMSOC_HAS_HPMSDK_GPTMR=y;HPMSOC_HAS_HPMSDK_MBX=y;HPMSOC_HAS_HPMSDK_EWDG=y;HPMSOC_HAS_HPMSDK_DMAMUX=y;HPMSOC_HAS_HPMSDK_DMAV2=y;HPMSOC_HAS_HPMSDK_GPIOM=y;HPMSOC_HAS_HPMSDK_ADC16=y;HPMSOC_HAS_HPMSDK_I2S=y;HPMSOC_HAS_HPMSDK_DAO=y;HPMSOC_HAS_HPMSDK_PDM=y;HPMSOC_HAS_HPMSDK_SMIX=y;HPMSOC_HAS_HPMSDK_MCAN=y;HPMSOC_HAS_HPMSDK_PTPC=y;HPMSOC_HAS_HPMSDK_LCDC=y;HPMSOC_HAS_HPMSDK_CAM=y;HPMSOC_HAS_HPMSDK_PDMA=y;HPMSOC_HAS_HPMSDK_JPEG=y;HPMSOC_HAS_HPMSDK_GWC=y;HPMSOC_HAS_HPMSDK_MIPI_DSI=y;HPMSOC_HAS_HPMSDK_MIPI_CSI=y;HPMSOC_HAS_HPMSDK_LVB=y;HPMSOC_HAS_HPMSDK_PIXELMUX=y;HPMSOC_HAS_HPMSDK_LCB=y;HPMSOC_HAS_HPMSDK_GPU=y;HPMSOC_HAS_HPMSDK_ENET=y;HPMSOC_HAS_HPMSDK_USB=y;HPMSOC_HAS_HPMSDK_SDXC=y;HPMSOC_HAS_HPMSDK_DDRCTL=y;HPMSOC_HAS_HPMSDK_FFA=y;HPMSOC_HAS_HPMSDK_SDP=y;HPMSOC_HAS_HPMSDK_SEC=y;HPMSOC_HAS_HPMSDK_MON=y;HPMSOC_HAS_HPMSDK_RNG=y;HPMSOC_HAS_HPMSDK_OTP=y;HPMSOC_HAS_HPMSDK_KEYM=y;HPMSOC_HAS_HPMSDK_SYSCTL=y;HPMSOC_HAS_HPMSDK_IOC=y;HPMSOC_HAS_HPMSDK_PLLCTLV2=y;HPMSOC_HAS_HPMSDK_PPOR=y;HPMSOC_HAS_HPMSDK_PCFG=y;HPMSOC_HAS_HPMSDK_PGPR=y;HPMSOC_HAS_HPMSDK_VAD=y;HPMSOC_HAS_HPMSDK_MIPI_DSI_PHY=y;HPMSOC_HAS_HPMSDK_MIPI_CSI_PHY=y;HPMSOC_HAS_HPMSDK_DDRPHY=y;HPMSOC_HAS_HPMSDK_TSNS=y;HPMSOC_HAS_HPMSDK_BACC=y;HPMSOC_HAS_HPMSDK_BPOR=y;HPMSOC_HAS_HPMSDK_BCFG=y;HPMSOC_HAS_HPMSDK_BGPR=y;HPMSOC_HAS_HPMSDK_RTC=y;HPMSOC_HAS_HPMSDK_BSEC=y;HPMSOC_HAS_HPMSDK_BKEY=y;HPMSOC_HAS_HPMSDK_BMON=y;HPMSOC_HAS_HPMSDK_TAMP=y;HPMSOC_HAS_HPMSDK_MONO=y;HPMSOC_HAS_HPMSDK_PMP=y;RGMII=1;__USE_RTL8211=1;CONFIG_DISABLE_GLOBAL_IRQ_ON_STARTUP=1;__freertos_irq_stack_top=_stack;CONFIG_FREERTOS=1;portasmHAS_MTIME=1;__freertos_irq_stack_top=_stack;CONFIG_FREERTOS=1;USE_NONVECTOR_MODE=1;DISABLE_IRQ_PREEMPTIVE=1;HPM_SES_USE_SEGGER_LD=1;"
+    gdb_server_write_timeout="300"
+    link_symbol_definitions="_heap_size=0x4000;_stack_size=0x4000;_flash_size=16M;_extram_size=256M;"
+    debug_cpu_registers_file="..\..\..\..\..\..\hpm_env\sdk_env\hpm_sdk\soc\HPM6800\HPM6880\hpm_ses_riscv_cpu_regs.xml"
+    debug_register_definition_file="..\..\..\..\..\..\hpm_env\sdk_env\hpm_sdk\soc\HPM6800\HPM6880\hpm_ses_reg.xml"
+    debug_restrict_memory_access="No"
+  />
+</solution>
