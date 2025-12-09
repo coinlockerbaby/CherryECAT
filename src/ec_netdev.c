@@ -82,18 +82,53 @@ ec_netdev_t *ec_netdev_init(uint8_t netdev_index)
         netdev->link_state = false;
 
         snprintf(netdev->name, sizeof(netdev->name), "ec-netdev%d(%s)", netdev_index, netdev_index == 0 ? "main" : "backup");
+#ifndef CONFIG_EC_PHY_CUSTOM
+        struct chry_phy_config config;
+
+        config.auto_negotiation = true;
+        config.loopback = false;
+        netdev->phydev.mdio_read = ec_mdio_low_level_read;
+        netdev->phydev.mdio_write = ec_mdio_low_level_write;
+        netdev->phydev.user_data = netdev;
+
+        // Delay to ensure PHY power up and access to mac
+        ec_osal_msleep(200);
+        EC_ASSERT_MSG(chry_phy_init(&netdev->phydev, &config) == 0, "PHY init failed for netdev %d\n", netdev_index);
+
+        EC_LOG_INFO("PHY info: \n");
+        EC_LOG_INFO("  ID: 0x%08x\n", netdev->phydev.phy_id);
+        EC_LOG_INFO("  Name: %s\n", netdev->phydev.driver->phy_name);
+        EC_LOG_INFO("  Description: %s\n", netdev->phydev.driver->phy_desc);
+#endif
     }
+
     return netdev;
 }
 
-void ec_netdev_enable_irq(ec_netdev_t *netdev, bool enable)
+void ec_netdev_poll_link_state(ec_netdev_t *netdev)
 {
-    ec_netdev_low_level_enable_irq(netdev, enable);
-}
+#ifndef CONFIG_EC_PHY_CUSTOM
+    struct chry_phy_status status = { 0 };
+    static struct chry_phy_status current_status = { 0 };
 
-bool ec_netdev_get_link_state(ec_netdev_t *netdev)
-{
-    return ec_netdev_low_level_get_link_state(netdev);
+    chry_phy_get_status(&netdev->phydev, &status);
+
+    EC_LOG_DBG("PHY link: %d, speed: %d, duplex: %d\n", status.link, status.speed, status.duplex);
+
+    if (memcmp(&current_status, &status, sizeof(struct chry_phy_status)) != 0) {
+        ec_memcpy(&current_status, &status, sizeof(struct chry_phy_status));
+
+        if (status.link) {
+            netdev->link_state = true;
+            ec_netdev_low_level_link_up(netdev, &status);
+        } else {
+            netdev->link_state = false;
+            ec_netdev_low_level_link_up(netdev, &status);
+        }
+    }
+#else
+    ec_netdev_low_level_poll_link_state(netdev);
+#endif
 }
 
 EC_FAST_CODE_SECTION uint8_t *ec_netdev_get_txbuf(ec_netdev_t *netdev)
@@ -127,17 +162,4 @@ EC_FAST_CODE_SECTION void ec_netdev_receive(ec_netdev_t *netdev, uint8_t *frame,
     netdev->master->netdev_stats.rx_bytes += size;
 
     ec_master_receive_datagrams(netdev->master, netdev->index, ec_data, ec_size);
-}
-
-EC_FAST_CODE_SECTION void ec_netdev_poll(ec_netdev_t *netdev)
-{
-    while (ec_netdev_low_level_input(netdev) == 0) {
-    }
-}
-
-void ec_netdev_trigger_poll(ec_netdev_t *netdev)
-{
-    if (netdev->master->nonperiod_sem) {
-        ec_osal_sem_give(netdev->master->nonperiod_sem);
-    }
 }

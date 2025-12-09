@@ -18,18 +18,25 @@
 #include "hpm_gptmr_drv.h"
 #include "cia402_def.h"
 #include "ec_master.h"
+#ifdef CONFIG_EC_EOE
+#include "lwip/tcpip.h"
+#endif
 
 SDK_DECLARE_EXT_ISR_M(BOARD_CONSOLE_UART_IRQ, shell_uart_isr)
 
 #define task_start_PRIORITY (configMAX_PRIORITIES - 2U)
 
-#define MOTOR_MODE_CSV_CSP  0
-#define MOTOR_MODE_CSP      1
-#define MOTOR_MODE_CSV      2
+#define MOTOR_MODE_CSV_CSP 0
+#define MOTOR_MODE_CSP     1
+#define MOTOR_MODE_CSV     2
 
 volatile uint8_t motor_mode = MOTOR_MODE_CSV;
 
-ec_master_t g_ec_master;
+ATTR_PLACE_AT_FAST_RAM_BSS ec_master_t g_ec_master;
+
+#ifdef CONFIG_EC_EOE
+ATTR_PLACE_AT_FAST_RAM_BSS ec_eoe_t g_ec_eoe;
+#endif
 
 static void task_start(void *param);
 
@@ -43,6 +50,10 @@ int main(void)
         };
     }
 
+#ifdef CONFIG_EC_EOE
+    /* Initialize the LwIP stack */
+    tcpip_init(NULL, NULL);
+#endif
     vTaskStartScheduler();
     printf("Unexpected scheduler exit!\r\n");
     while (1) {
@@ -91,6 +102,9 @@ static void task_start(void *param)
     printf("Enable shell uart interrupt\r\n");
 
     ec_master_cmd_init(&g_ec_master);
+#ifdef CONFIG_EC_EOE
+    ec_master_cmd_eoe_init(&g_ec_eoe);
+#endif
     ec_master_init(&g_ec_master, 0);
 
     printf("Exit start task\r\n");
@@ -135,18 +149,47 @@ static ec_pdo_entry_info_t coe402_1a02[] = {
     { 0x0000, 0x00, 0x10 },
 };
 
-static ec_pdo_info_t cia402_rxpdos[] = {
+static ec_pdo_info_t cia402_csv_rxpdos[] = {
     { 0x1602, 3, &coe402_1602[0] },
 };
 
-static ec_pdo_info_t cia402_txpdos[] = {
+static ec_pdo_info_t cia402_csv_txpdos[] = {
     { 0x1a02, 3, &coe402_1a02[0] },
 };
 
-static ec_sync_info_t cia402_syncs[] = {
-    { 2, EC_DIR_OUTPUT, 1, cia402_rxpdos },
-    { 3, EC_DIR_INPUT, 1, cia402_txpdos },
+static ec_sync_info_t cia402_csv_syncs[] = {
+    { 2, EC_DIR_OUTPUT, 1, cia402_csv_rxpdos },
+    { 3, EC_DIR_INPUT, 1, cia402_csv_txpdos },
 };
+
+static ec_pdo_entry_info_t coe402_1601[] = {
+    { 0x6040, 0x00, 0x10 },
+    { 0x607a, 0x00, 0x20 },
+    { 0x0000, 0x00, 0x10 },
+};
+
+static ec_pdo_entry_info_t coe402_1a01[] = {
+    { 0x6041, 0x00, 0x10 },
+    { 0x6064, 0x00, 0x20 },
+    { 0x0000, 0x00, 0x10 },
+};
+
+static ec_pdo_info_t cia402_csp_rxpdos[] = {
+    { 0x1601, 3, &coe402_1601[0] },
+};
+
+static ec_pdo_info_t cia402_csp_txpdos[] = {
+    { 0x1a01, 3, &coe402_1a01[0] },
+};
+
+static ec_sync_info_t cia402_csp_syncs[] = {
+    { 2, EC_DIR_OUTPUT, 1, cia402_csp_rxpdos },
+    { 3, EC_DIR_INPUT, 1, cia402_csp_txpdos },
+};
+
+void ec_pdo_callback(ec_slave_t *slave, uint8_t *output, uint8_t *input)
+{
+}
 
 int ec_start(int argc, const char **argv)
 {
@@ -159,7 +202,7 @@ int ec_start(int argc, const char **argv)
     }
 
     if (argc < 2) {
-        printf("Please input: ec_start <cyclic time in us>\r\n");
+        printf("Please input: ec_start <cyclic time in us> mode\r\n");
         return -1;
     }
 
@@ -170,8 +213,23 @@ int ec_start(int argc, const char **argv)
     slave_cia402_config.dc_sync[1].cycle_time = 0;
     slave_cia402_config.dc_sync[1].shift_time = 0;
 
-    slave_cia402_config.sync = cia402_syncs;
-    slave_cia402_config.sync_count = sizeof(cia402_syncs) / sizeof(ec_sync_info_t);
+    if (argc >= 3) {
+        if (strncmp(argv[2], "csp", 3) == 0) {
+            motor_mode = MOTOR_MODE_CSP;
+            slave_cia402_config.sync = cia402_csp_syncs;
+            slave_cia402_config.sync_count = sizeof(cia402_csp_syncs) / sizeof(ec_sync_info_t);
+        } else if (strncmp(argv[2], "csv", 3) == 0) {
+            motor_mode = MOTOR_MODE_CSV;
+            slave_cia402_config.sync = cia402_csv_syncs;
+            slave_cia402_config.sync_count = sizeof(cia402_csv_syncs) / sizeof(ec_sync_info_t);
+        } else {
+            printf("Unsupported motor mode, use csv as default\r\n");
+            motor_mode = MOTOR_MODE_CSV;
+            slave_cia402_config.sync = cia402_csv_syncs;
+            slave_cia402_config.sync_count = sizeof(cia402_csv_syncs) / sizeof(ec_sync_info_t);
+        }
+        slave_cia402_config.pdo_callback = ec_pdo_callback;
+    }
 
     slave_dio_config.dc_assign_activate = 0x300;
 
@@ -181,6 +239,7 @@ int ec_start(int argc, const char **argv)
     slave_dio_config.dc_sync[1].shift_time = 0;
     slave_dio_config.sync = dio_syncs;
     slave_dio_config.sync_count = sizeof(dio_syncs) / sizeof(ec_sync_info_t);
+    slave_dio_config.pdo_callback = ec_pdo_callback;
 
     for (uint32_t i = 0; i < g_ec_master.slave_count; i++) {
         if (g_ec_master.slaves[i].sii.vendor_id != 0x0048504D) { // HPMicro
@@ -192,13 +251,13 @@ int ec_start(int argc, const char **argv)
             case 0x00000001: // DIO
                 g_ec_master.slaves[i].config = &slave_dio_config;
                 break;
-            case 0x00000002: // FOE
-                break;
             case 0x00000003: // CIA402
+            case 0x00000004: // CIA402 + FOE
                 g_ec_master.slaves[i].config = &slave_cia402_config;
                 break;
 
             default:
+                g_ec_master.slaves[i].config = &slave_dio_config;
                 break;
         }
     }
@@ -214,3 +273,13 @@ int ec_stop(int argc, const char **argv)
     return 0;
 }
 CSH_CMD_EXPORT(ec_stop, );
+
+#ifdef CONFIG_EC_EOE
+#include "tcp_client.h"
+int tcp_client(int argc, const char **argv)
+{
+    tcp_client_init(&g_ec_eoe.netif);
+    return 0;
+}
+CSH_CMD_EXPORT(tcp_client, );
+#endif

@@ -21,12 +21,12 @@
 
 #define __ENABLE_ENET_RECEIVE_INTERRUPT 1
 
-#define MAC_ADDR0          0x00
-#define MAC_ADDR1          0x80
-#define MAC_ADDR2          0xE1
-#define MAC_ADDR3          0x00
-#define MAC_ADDR4          0x00
-#define MAC_ADDR5          0x00
+#define MAC_ADDR0 0x00
+#define MAC_ADDR1 0x80
+#define MAC_ADDR2 0xE1
+#define MAC_ADDR3 0x00
+#define MAC_ADDR4 0x00
+#define MAC_ADDR5 0x00
 
 #define ENET_TX_BUFF_COUNT CONFIG_EC_MAX_ENET_TXBUF_COUNT
 #define ENET_RX_BUFF_COUNT CONFIG_EC_MAX_ENET_RXBUF_COUNT
@@ -46,17 +46,15 @@ ATTR_PLACE_AT_FAST_RAM_BSS_WITH_ALIGNMENT(ENET_SOC_BUFF_ADDR_ALIGNMENT)
 __RW uint8_t tx_buff[ENET_TX_BUFF_COUNT][ENET_TX_BUFF_SIZE]; /* Ethernet Transmit Buffer */
 
 enet_desc_t desc;
-uint8_t mac[ENET_MAC];
+uint8_t mac[ETH_ALEN];
 
 ec_netdev_t g_netdev;
-
-uint32_t g_clock_time_div;
 
 ATTR_WEAK void enet_get_mac_address(uint8_t *mac)
 {
     bool invalid = true;
 
-    uint32_t uuid[(ENET_MAC + (ENET_MAC - 1)) / sizeof(uint32_t)];
+    uint32_t uuid[(ETH_ALEN + (ETH_ALEN - 1)) / sizeof(uint32_t)];
 
     for (int i = 0; i < ARRAY_SIZE(uuid); i++) {
         uuid[i] = otp_read_from_shadow(OTP_SOC_UUID_IDX + i);
@@ -66,7 +64,7 @@ ATTR_WEAK void enet_get_mac_address(uint8_t *mac)
     }
 
     if (invalid == true) {
-        ec_memcpy(mac, &uuid, ENET_MAC);
+        ec_memcpy(mac, &uuid, ETH_ALEN);
     } else {
         mac[0] = MAC_ADDR0;
         mac[1] = MAC_ADDR1;
@@ -83,6 +81,7 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     enet_mac_config_t enet_config;
     enet_tx_control_config_t enet_tx_control_config;
 
+#ifdef CONFIG_EC_PHY_CUSTOM
 #if defined(RGMII) && RGMII
 #if defined(__USE_DP83867) && __USE_DP83867
     dp83867_config_t phy_config;
@@ -94,6 +93,7 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     dp83848_config_t phy_config;
 #else
     rtl8201_config_t phy_config;
+#endif
 #endif
 #endif
 
@@ -135,6 +135,9 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     enet_config.sarc = enet_sarc_replace_mac0;
 
 #if defined(__ENABLE_ENET_RECEIVE_INTERRUPT) && __ENABLE_ENET_RECEIVE_INTERRUPT
+    /* Enable Enet IRQ */
+    board_enable_enet_irq(ENET);
+
     /* Get the default interrupt config */
     enet_get_default_interrupt_config(ENET, &int_config);
 #endif
@@ -149,6 +152,7 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     enet_disable_lpi_interrupt(ENET);
 #endif
 
+#ifdef CONFIG_EC_PHY_CUSTOM
 /* Initialize phy */
 #if defined(RGMII) && RGMII
 #if defined(__USE_DP83867) && __USE_DP83867
@@ -174,18 +178,17 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     if (rtl8201_basic_mode_init(ptr, &phy_config) == true) {
 #endif
 #endif
-        printf("Enet phy init passed !\n");
-        return status_success;
+        EC_LOG_DBG("Enet phy init passed !\n");
     } else {
-        printf("Enet phy init failed !\n");
+        EC_LOG_DBG("Enet phy init failed !\n");
         return status_fail;
     }
+#endif
+    return status_success;
 }
 
 ec_netdev_t *ec_netdev_low_level_init(uint8_t netdev_index)
 {
-    g_clock_time_div = clock_get_frequency(clock_cpu0) / 1000000UL;
-
     /* Initialize GPIOs */
     board_init_enet_pins(ENET);
 
@@ -197,18 +200,18 @@ ec_netdev_t *ec_netdev_low_level_init(uint8_t netdev_index)
 #else
     /* Set RMII reference clock */
     board_init_enet_rmii_reference_clock(ENET, BOARD_ENET_RMII_INT_REF_CLK);
-    printf("Reference Clock: %s\n", BOARD_ENET_RMII_INT_REF_CLK ? "Internal Clock" : "External Clock");
+    EC_LOG_DBG("Reference Clock: %s\n", BOARD_ENET_RMII_INT_REF_CLK ? "Internal Clock" : "External Clock");
 #endif
 
     /* Initialize MAC and DMA */
     if (enet_init(ENET) == 0) {
     } else {
-        printf("Enet initialization fails !!!\n");
+        EC_LOG_DBG("Enet initialization fails !!!\n");
         while (1) {
         }
     }
 
-    ec_memcpy(g_netdev.mac_addr, mac, ENET_MAC);
+    ec_memcpy(g_netdev.mac_addr, mac, ETH_ALEN);
 
     for (uint32_t i = 0; i < ENET_TX_BUFF_COUNT; i++) {
         for (uint8_t j = 0; j < 6; j++) { // dst MAC
@@ -223,18 +226,45 @@ ec_netdev_t *ec_netdev_low_level_init(uint8_t netdev_index)
     return &g_netdev;
 }
 
-void ec_netdev_low_level_enable_irq(ec_netdev_t *netdev, bool enable)
+#ifndef CONFIG_EC_PHY_CUSTOM
+void ec_mdio_low_level_write(struct chry_phy_device *phydev, uint16_t phy_addr, uint16_t regnum, uint16_t val)
 {
-    if (enable) {
-        /* Enable Enet IRQ */
-        board_enable_enet_irq(ENET);
-    } else {
-        /* Disable Enet IRQ */
-        board_disable_enet_irq(ENET);
-    }
+    //ec_netdev_t *netdev = (ec_netdev_t *)phydev->user_data;
+    enet_write_phy(ENET, phy_addr, regnum, val);
 }
 
-bool ec_netdev_low_level_get_link_state(ec_netdev_t *netdev)
+uint16_t ec_mdio_low_level_read(struct chry_phy_device *phydev, uint16_t phy_addr, uint16_t regnum)
+{
+    //ec_netdev_t *netdev = (ec_netdev_t *)phydev->user_data;
+    return enet_read_phy(ENET, phy_addr, regnum);
+}
+
+void ec_netdev_low_level_link_up(ec_netdev_t *netdev, struct chry_phy_status *status)
+{
+    enet_line_speed_t line_speed = enet_line_speed_10mbps;
+
+    switch (status->speed) {
+        case 10:
+            line_speed = enet_line_speed_10mbps;
+            break;
+        case 100:
+            line_speed = enet_line_speed_100mbps;
+            break;
+        case 1000:
+            line_speed = enet_line_speed_1000mbps;
+            break;
+
+        default:
+            break;
+    }
+    if (status->link) {
+        enet_set_line_speed(ENET, line_speed);
+        enet_set_duplex_mode(ENET, status->duplex);
+    } else {
+    }
+}
+#else
+void ec_netdev_low_level_poll_link_state(ec_netdev_t *netdev)
 {
     static enet_phy_status_t last_status;
     enet_phy_status_t status = { 0 };
@@ -260,16 +290,23 @@ bool ec_netdev_low_level_get_link_state(ec_netdev_t *netdev)
         if (status.enet_phy_link) {
             enet_set_line_speed(ENET, line_speed[status.enet_phy_speed]);
             enet_set_duplex_mode(ENET, status.enet_phy_duplex);
+            netdev->link_state = true;
         } else {
+            netdev->link_state = false;
         }
     }
-
-    return status.enet_phy_link;
 }
+#endif
 
 EC_FAST_CODE_SECTION uint8_t *ec_netdev_low_level_get_txbuf(ec_netdev_t *netdev)
 {
-    return (uint8_t *)tx_buff[netdev->tx_frame_index];
+    __IO enet_tx_desc_t *dma_tx_desc;
+
+    dma_tx_desc = desc.tx_desc_list_cur;
+
+    EC_ASSERT_MSG(dma_tx_desc->tdes0_bm.own == 0, "No free tx buffer available\n");
+
+    return (uint8_t *)sys_address_to_core_local_mem(BOARD_RUNNING_CORE, dma_tx_desc->tdes2_bm.buffer1);
 }
 
 EC_FAST_CODE_SECTION int ec_netdev_low_level_output(ec_netdev_t *netdev, uint32_t size)
@@ -280,9 +317,6 @@ EC_FAST_CODE_SECTION int ec_netdev_low_level_output(ec_netdev_t *netdev, uint32_
     if (dma_tx_desc->tdes0_bm.own != 0) {
         return -1;
     }
-
-    netdev->tx_frame_index++;
-    netdev->tx_frame_index %= ENET_TX_BUFF_COUNT;
 
     /* Prepare transmit descriptors to give to DMA*/
     enet_prepare_transmission_descriptors(ENET, &desc.tx_desc_list_cur, size + 4, desc.tx_buff_cfg.size);
@@ -353,7 +387,8 @@ void isr_enet(ENET_Type *ptr)
 
     if (ENET_DMA_STATUS_RI_GET(status)) {
         ptr->DMA_STATUS |= ENET_DMA_STATUS_RI_MASK;
-        ec_netdev_trigger_poll(&g_netdev);
+        while (ec_netdev_low_level_input(&g_netdev) == 0) {
+        }
     }
 
     if (ENET_MMC_INTR_RX_RXCTRLFIS_GET(rxgbfrmis)) {
@@ -416,6 +451,7 @@ void ec_htimer_start(uint32_t us, ec_htimer_cb cb, void *arg)
     gptmr_channel_config(EC_HTIMER, EC_HTIMER_CH, &config, false);
     gptmr_enable_irq(EC_HTIMER, GPTMR_CH_RLD_IRQ_MASK(EC_HTIMER_CH));
     intc_m_enable_irq_with_priority(EC_HTIMER_IRQ, 10);
+    gptmr_channel_reset_count(EC_HTIMER, EC_HTIMER_CH);
     gptmr_start_counter(EC_HTIMER, EC_HTIMER_CH);
 }
 
@@ -426,12 +462,7 @@ void ec_htimer_stop(void)
     intc_m_disable_irq(EC_HTIMER_IRQ);
 }
 
-EC_FAST_CODE_SECTION uint64_t ec_htimer_get_time_ns(void)
+uint32_t ec_get_cpu_frequency(void)
 {
-    return (hpm_csr_get_core_mcycle() * 1000) / g_clock_time_div;
-}
-
-EC_FAST_CODE_SECTION uint64_t ec_htimer_get_time_us(void)
-{
-    return hpm_csr_get_core_mcycle() / g_clock_time_div;
+    return clock_get_frequency(clock_cpu0);
 }

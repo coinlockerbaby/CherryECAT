@@ -9,12 +9,16 @@ if(CONFIG_CHERRYECAT)
         ${CMAKE_CURRENT_LIST_DIR}/src/ec_coe.c
         ${CMAKE_CURRENT_LIST_DIR}/src/ec_common.c
         ${CMAKE_CURRENT_LIST_DIR}/src/ec_datagram.c
+        ${CMAKE_CURRENT_LIST_DIR}/src/ec_eoe.c
+        ${CMAKE_CURRENT_LIST_DIR}/src/ec_foe.c
         ${CMAKE_CURRENT_LIST_DIR}/src/ec_mailbox.c
         ${CMAKE_CURRENT_LIST_DIR}/src/ec_master.c
         ${CMAKE_CURRENT_LIST_DIR}/src/ec_netdev.c
         ${CMAKE_CURRENT_LIST_DIR}/src/ec_perf.c
         ${CMAKE_CURRENT_LIST_DIR}/src/ec_sii.c
         ${CMAKE_CURRENT_LIST_DIR}/src/ec_slave.c
+        ${CMAKE_CURRENT_LIST_DIR}/src/ec_timestamp.c
+        ${CMAKE_CURRENT_LIST_DIR}/src/phy/chry_phy.c
     )
 
     if(DEFINED CONFIG_CHERRYECAT_OSAL)
@@ -28,7 +32,7 @@ if(CONFIG_CHERRYECAT)
     endif()
 
     if(HPM_SDK_BASE)
-        list(APPEND cherryec_srcs port/netdev_hpm.c)
+        list(APPEND cherryec_srcs port/netdev_hpmicro.c)
         sdk_inc(${cherryec_incs})
         sdk_src(${cherryec_srcs})
     endif()

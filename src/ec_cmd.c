@@ -85,10 +85,21 @@ typedef struct {
 
 static ec_master_t *global_cmd_master = NULL;
 
+#ifdef CONFIG_EC_EOE
+static ec_eoe_t *global_cmd_eoe = NULL;
+#endif
+
 void ec_master_cmd_init(ec_master_t *master)
 {
     global_cmd_master = master;
 }
+
+#ifdef CONFIG_EC_EOE
+void ec_master_cmd_eoe_init(ec_eoe_t *master)
+{
+    global_cmd_eoe = master;
+}
+#endif
 
 static void ec_master_cmd_show_help(void)
 {
@@ -96,6 +107,7 @@ static void ec_master_cmd_show_help(void)
     EC_LOG_RAW("Usage: ethercat <command> [options]\n");
     EC_LOG_RAW("Commands:\n");
     EC_LOG_RAW("  master                                         Show master information\n");
+    EC_LOG_RAW("  rescan                                         Request a slaves rescan\n");
     EC_LOG_RAW("  slaves                                         Show slaves overview\n");
     EC_LOG_RAW("  slaves -v                                      Show detailed information for all slaves\n");
     EC_LOG_RAW("  slaves -p <idx>                                Show information for slave <idx>\n");
@@ -106,11 +118,19 @@ static void ec_master_cmd_show_help(void)
     EC_LOG_RAW("  states -p <idx> <state>                        Request state for slave <idx> (hex)\n");
     EC_LOG_RAW("  coe_read -p [idx] [index] [subindex]           Read SDO via CoE\n");
     EC_LOG_RAW("  coe_write -p [idx] [index] [subindex] [data]   Write SDO via CoE\n");
+#ifdef CONFIG_EC_FOE
+    EC_LOG_RAW("  foe_write -p [idx] [filename] [pwd] [hexdata]  Read hexarray via FoE\n");
+    EC_LOG_RAW("  foe_read -p [idx] [filename] [pwd]             Write hexarray via FoE\n");
+#endif
+#ifdef CONFIG_EC_EOE
+    EC_LOG_RAW("  eoe_start -p [slave_idx]                       Start EoE on slave <idx>\n");
+#endif
     EC_LOG_RAW("  pdo_read                                       Read process data\n");
     EC_LOG_RAW("  pdo_read -p [idx]                              Read slave <idx> process data\n");
     EC_LOG_RAW("  pdo_write [offset] [hex low...high]            Write hexarray with offset to pdo\n");
     EC_LOG_RAW("  pdo_write -p [idx] [offset] [hex low...high]   Write slave <idx> hexarray with offset to pdo\n");
     EC_LOG_RAW("  sii_read -p [idx]                              Read SII\n");
+    EC_LOG_RAW("  sii_write -p [idx]                             Write SII\n");
     EC_LOG_RAW("  wc                                             Show master working counter\n");
 #ifdef CONFIG_EC_PERF_ENABLE
     EC_LOG_RAW("  perf -s <time>                                 Start performance test\n");
@@ -140,7 +160,6 @@ static const char *ec_slave_state_string(uint8_t state)
     }
 }
 
-// 添加端口类型字符串转换函数
 static const char *ec_port_desc_string(uint8_t desc)
 {
     switch (desc) {
@@ -568,30 +587,29 @@ static void ec_cmd_show_slave_pdos(ec_master_t *master, uint32_t slave_idx)
                    master->slaves[slave_idx].sm_info[i].control,
                    master->slaves[slave_idx].sm_info[i].enable);
 
-        // if sm is process data output, print rxpdo info
-        if (i == EC_SM_INDEX_PROCESS_DATA_OUTPUT) {
-            for (uint16_t j = 0; j < master->slaves[slave_idx].sm_info[EC_SM_INDEX_PROCESS_DATA_OUTPUT].pdo_assign.count; j++) {
-                EC_LOG_RAW("\tRxPDO 0x%04x\r\n", master->slaves[slave_idx].sm_info[EC_SM_INDEX_PROCESS_DATA_OUTPUT].pdo_assign.entry[j]);
+        if (master->slaves[slave_idx].sm_info[i].fmmu_enable) {
+            // if sm is process data output, print rxpdo info
+            if (master->slaves[slave_idx].sm_info[i].control & (1 << 2)) {
+                for (uint16_t j = 0; j < master->slaves[slave_idx].sm_info[i].pdo_assign.count; j++) {
+                    EC_LOG_RAW("\tRxPDO 0x%04x\r\n", master->slaves[slave_idx].sm_info[i].pdo_assign.entry[j]);
 
-                for (uint16_t k = 0; k < master->slaves[slave_idx].sm_info[EC_SM_INDEX_PROCESS_DATA_OUTPUT].pdo_mapping[j].count; k++) {
-                    EC_LOG_RAW("\t\tPDO entry 0x%04x:0x%02x, bitlen 0x%02x\r\n",
-                               master->slaves[slave_idx].sm_info[EC_SM_INDEX_PROCESS_DATA_OUTPUT].pdo_mapping[j].entry[k] >> 16 & 0xffff,
-                               master->slaves[slave_idx].sm_info[EC_SM_INDEX_PROCESS_DATA_OUTPUT].pdo_mapping[j].entry[k] >> 8 & 0xff,
-                               master->slaves[slave_idx].sm_info[EC_SM_INDEX_PROCESS_DATA_OUTPUT].pdo_mapping[j].entry[k] >> 0 & 0xff);
+                    for (uint16_t k = 0; k < master->slaves[slave_idx].sm_info[i].pdo_mapping[j].count; k++) {
+                        EC_LOG_RAW("\t\tPDO entry 0x%04x:0x%02x, bitlen 0x%02x\r\n",
+                                   master->slaves[slave_idx].sm_info[i].pdo_mapping[j].entry[k] >> 16 & 0xffff,
+                                   master->slaves[slave_idx].sm_info[i].pdo_mapping[j].entry[k] >> 8 & 0xff,
+                                   master->slaves[slave_idx].sm_info[i].pdo_mapping[j].entry[k] >> 0 & 0xff);
+                    }
                 }
-            }
-        }
+            } else {
+                for (uint16_t j = 0; j < master->slaves[slave_idx].sm_info[i].pdo_assign.count; j++) {
+                    EC_LOG_RAW("\tTxPDO 0x%04x\r\n", master->slaves[slave_idx].sm_info[i].pdo_assign.entry[j]);
 
-        // if sm is process data input, print txpdo info
-        if (i == EC_SM_INDEX_PROCESS_DATA_INPUT) {
-            for (uint16_t j = 0; j < master->slaves[slave_idx].sm_info[EC_SM_INDEX_PROCESS_DATA_INPUT].pdo_assign.count; j++) {
-                EC_LOG_RAW("\tTxPDO 0x%04x\r\n", master->slaves[slave_idx].sm_info[EC_SM_INDEX_PROCESS_DATA_INPUT].pdo_assign.entry[j]);
-
-                for (uint16_t k = 0; k < master->slaves[slave_idx].sm_info[EC_SM_INDEX_PROCESS_DATA_INPUT].pdo_mapping[j].count; k++) {
-                    EC_LOG_RAW("\t\tPDO entry 0x%04x:0x%02x, bitlen 0x%02x\r\n",
-                               master->slaves[slave_idx].sm_info[EC_SM_INDEX_PROCESS_DATA_INPUT].pdo_mapping[j].entry[k] >> 16 & 0xffff,
-                               master->slaves[slave_idx].sm_info[EC_SM_INDEX_PROCESS_DATA_INPUT].pdo_mapping[j].entry[k] >> 8 & 0xff,
-                               master->slaves[slave_idx].sm_info[EC_SM_INDEX_PROCESS_DATA_INPUT].pdo_mapping[j].entry[k] >> 0 & 0xff);
+                    for (uint16_t k = 0; k < master->slaves[slave_idx].sm_info[i].pdo_mapping[j].count; k++) {
+                        EC_LOG_RAW("\t\tPDO entry 0x%04x:0x%02x, bitlen 0x%02x\r\n",
+                                   master->slaves[slave_idx].sm_info[i].pdo_mapping[j].entry[k] >> 16 & 0xffff,
+                                   master->slaves[slave_idx].sm_info[i].pdo_mapping[j].entry[k] >> 8 & 0xff,
+                                   master->slaves[slave_idx].sm_info[i].pdo_mapping[j].entry[k] >> 0 & 0xff);
+                    }
                 }
             }
         }
@@ -664,6 +682,8 @@ static int parse_hex_string(const char *hex_str, uint8_t *output, uint32_t max_l
 
 int ethercat(int argc, const char **argv)
 {
+    int ret;
+
     if (global_cmd_master == NULL) {
         EC_LOG_RAW("No master configured\n");
         return -1;
@@ -679,6 +699,9 @@ int ethercat(int argc, const char **argv)
         return 0;
     } else if (strcmp(argv[1], "master") == 0) {
         ec_master_cmd_master(global_cmd_master);
+        return 0;
+    } else if (strcmp(argv[1], "rescan") == 0) {
+        global_cmd_master->rescan_request = true;
         return 0;
     } else if (strcmp(argv[1], "slaves") == 0) {
         // ethercat slaves
@@ -723,13 +746,6 @@ int ethercat(int argc, const char **argv)
             // ethercat pdos -p [x]
             ec_cmd_show_slave_pdos(global_cmd_master, atoi(argv[3]));
             return 0;
-        } else if (argc == 3 && strcmp(argv[2], "-v") == 0) {
-            // ethercat slaves -v
-            for (uint32_t i = 0; i < global_cmd_master->slave_count; i++) {
-                ec_cmd_show_slave_detail(global_cmd_master, i);
-            }
-
-            return 0;
         } else {
         }
     } else if (argc >= 3 && strcmp(argv[1], "states") == 0) {
@@ -737,12 +753,12 @@ int ethercat(int argc, const char **argv)
         if (argc == 3) {
             // ethercat states [state]
             for (uint32_t i = 0; i < global_cmd_master->slave_count; i++) {
-                ec_cmd_slave_state_request(global_cmd_master, i, strtol(argv[4], NULL, 16));
+                ec_cmd_slave_state_request(global_cmd_master, i, strtoul(argv[4], NULL, 16));
             }
             return 0;
         } else if (argc == 5 && strcmp(argv[2], "-p") == 0) {
             // ethercat states -p [x] [state]
-            ec_cmd_slave_state_request(global_cmd_master, atoi(argv[3]), strtol(argv[4], NULL, 16));
+            ec_cmd_slave_state_request(global_cmd_master, atoi(argv[3]), strtoul(argv[4], NULL, 16));
             return 0;
         } else {
         }
@@ -750,10 +766,19 @@ int ethercat(int argc, const char **argv)
         // ethercat wc
         if (argc == 2) {
             // ethercat wc
-            EC_LOG_RAW("Master %d working counter(expect/actual): %u/%u\n",
+            EC_LOG_RAW("Master %d working counter(actual/expect): %u/%u\n",
                        global_cmd_master->index,
-                       global_cmd_master->expected_working_counter,
-                       global_cmd_master->actual_working_counter);
+                       global_cmd_master->actual_working_counter,
+                       global_cmd_master->expected_working_counter);
+
+            for (uint32_t i = 0; i < global_cmd_master->slave_count; i++) {
+                EC_LOG_RAW("%-3u  %u:%04x         (actual/expect): %u/%u\n",
+                           global_cmd_master->index,
+                           i,
+                           global_cmd_master->slaves[i].autoinc_address,
+                           global_cmd_master->slaves[i].actual_working_counter,
+                           global_cmd_master->slaves[i].expected_working_counter);
+            }
             return 0;
         } else {
         }
@@ -762,24 +787,21 @@ int ethercat(int argc, const char **argv)
         static ec_datagram_t datagram;
         static uint8_t output_buffer[512];
         uint32_t actual_size;
-        int ret;
 
         uint32_t slave_idx = atoi(argv[3]);
-        if (slave_idx >= global_cmd_master->slave_count) {
-            EC_LOG_RAW("No slaves found\n");
-            return -1;
-        }
-        ec_datagram_init(&datagram, 512);
-        ret = ec_coe_upload(&global_cmd_master->slaves[slave_idx],
+
+        ec_datagram_init(&datagram, 1024);
+        ret = ec_coe_upload(global_cmd_master,
+                            slave_idx,
                             &datagram,
-                            strtol(argv[4], NULL, 16),
-                            argc >= 6 ? strtol(argv[5], NULL, 16) : 0x00,
+                            strtoul(argv[4], NULL, 16),
+                            argc >= 6 ? strtoul(argv[5], NULL, 16) : 0x00,
                             output_buffer,
                             sizeof(output_buffer),
                             &actual_size,
                             argc >= 6 ? false : true);
         if (ret < 0) {
-            EC_SLAVE_LOG_ERR("Slave %u coe_read failed: %d\n", slave_idx, ret);
+            EC_LOG_RAW("Slave %u coe_read failed: %d\n", slave_idx, ret);
         } else {
             ec_hexdump(output_buffer, actual_size);
         }
@@ -791,14 +813,9 @@ int ethercat(int argc, const char **argv)
         static ec_datagram_t datagram;
         uint32_t u32data;
         uint32_t size;
-        int ret;
 
         uint32_t slave_idx = atoi(argv[3]);
-        if (slave_idx >= global_cmd_master->slave_count) {
-            EC_LOG_RAW("No slaves found\n");
-            return -1;
-        }
-        u32data = strtol(argv[6], NULL, 16);
+        u32data = strtoul(argv[6], NULL, 16);
 
         if (u32data < 0xff)
             size = 1;
@@ -807,16 +824,17 @@ int ethercat(int argc, const char **argv)
         else
             size = 4;
 
-        ec_datagram_init(&datagram, 512);
-        ret = ec_coe_download(&global_cmd_master->slaves[slave_idx],
+        ec_datagram_init(&datagram, 1024);
+        ret = ec_coe_download(global_cmd_master,
+                              slave_idx,
                               &datagram,
-                              strtol(argv[4], NULL, 16),
-                              strtol(argv[5], NULL, 16),
+                              strtoul(argv[4], NULL, 16),
+                              strtoul(argv[5], NULL, 16),
                               &u32data,
                               size,
                               false);
         if (ret < 0) {
-            EC_SLAVE_LOG_ERR("Slave %u coe_write failed: %d\n", slave_idx, ret);
+            EC_LOG_RAW("Slave %u coe_write failed: %d\n", slave_idx, ret);
         } else {
             EC_LOG_RAW("Slave %u coe write success\n", slave_idx);
         }
@@ -836,37 +854,37 @@ int ethercat(int argc, const char **argv)
         return 0;
     } else if (argc >= 5 && strcmp(argv[1], "sii_write") == 0) {
         // ethercat sii_write -p [slave_idx]
-        uint32_t slave_idx = atoi(argv[3]);
-        if (slave_idx >= global_cmd_master->slave_count) {
-            EC_LOG_RAW("No slaves found\n");
-            return -1;
-        }
         static ec_datagram_t datagram;
-
-        ec_datagram_init(&datagram, 4096);
-
         extern unsigned char cherryecat_eepromdata[2048];
 
+        ec_datagram_init(&datagram, 1024);
+
+        uint32_t slave_idx = atoi(argv[3]);
+
         ec_osal_mutex_take(global_cmd_master->scan_lock);
-        ec_sii_write(&global_cmd_master->slaves[slave_idx], &datagram, 0x0000, (const uint16_t *)cherryecat_eepromdata, sizeof(cherryecat_eepromdata));
+        ret = ec_sii_write(global_cmd_master, slave_idx, &datagram, 0x0000, (const uint16_t *)cherryecat_eepromdata, sizeof(cherryecat_eepromdata));
         ec_osal_mutex_give(global_cmd_master->scan_lock);
+
+        if (ret < 0) {
+            EC_LOG_RAW("Slave %u sii_write failed: %d\n", slave_idx, ret);
+        } else {
+            EC_LOG_RAW("Slave %u sii write success\n", slave_idx);
+        }
 
         ec_datagram_clear(&datagram);
         return 0;
     } else if (argc >= 2 && strcmp(argv[1], "pdo_read") == 0) {
         // ethercat pdo_read
         if (argc == 2) {
-            for (uint32_t count = 0; count < 10; count++) {
+            for (uint32_t slave_idx = 0; slave_idx < global_cmd_master->slave_count; slave_idx++) {
+                uint8_t *buffer = ec_master_get_slave_domain_input(global_cmd_master, slave_idx);
+                uint32_t data_size = ec_master_get_slave_domain_isize(global_cmd_master, slave_idx);
                 EC_LOG_RAW("\r");
-                for (uint32_t i = 0; i < global_cmd_master->actual_pdo_size; i++) {
-                    EC_LOG_RAW("%02x ", global_cmd_master->pdo_buffer[EC_NETDEV_MAIN][i]);
+                for (uint32_t i = 0; i < data_size; i++) {
+                    EC_LOG_RAW("%02x ", buffer[i]);
                 }
-                fflush(stdout);
-                if (count < 9) {
-                    ec_osal_msleep(1000);
-                }
+                EC_LOG_RAW("\n");
             }
-            EC_LOG_RAW("\n");
             return 0;
         } else if (argc == 4 && strcmp(argv[2], "-p") == 0) {
             // ethercat pdo_read -p [slave_idx]
@@ -905,7 +923,7 @@ int ethercat(int argc, const char **argv)
                 return -1;
             }
 
-            offset = strtol(argv[4], NULL, 16);
+            offset = strtoul(argv[4], NULL, 16);
 
             size = parse_hex_string(argv[5], hexdata, sizeof(hexdata));
             if (size < 0) {
@@ -920,7 +938,7 @@ int ethercat(int argc, const char **argv)
             }
             return 0;
         } else {
-            offset = strtol(argv[2], NULL, 16);
+            offset = strtoul(argv[2], NULL, 16);
 
             size = parse_hex_string(argv[3], hexdata, sizeof(hexdata));
             if (size < 0) {
@@ -938,7 +956,98 @@ int ethercat(int argc, const char **argv)
             }
             return 0;
         }
-    } else if (argc >= 3 && strcmp(argv[1], "timediff") == 0) {
+    }
+#ifdef CONFIG_EC_FOE
+    else if (argc >= 7 && strcmp(argv[1], "foe_write") == 0) {
+        // ethercat foe_write -p [slave_idx] [filename] [password] [hexdata]
+        uint8_t hexdata[256];
+        uint32_t size;
+        uint32_t slave_idx = atoi(argv[3]);
+        const char *filename = argv[4];
+        uint32_t password = strtoul(argv[5], NULL, 16);
+
+        size = parse_hex_string(argv[6], hexdata, sizeof(hexdata));
+        if (size < 0) {
+            return -1;
+        }
+        static ec_datagram_t datagram;
+
+        ec_datagram_init(&datagram, 1024);
+
+        EC_LOG_RAW("Slave %u foe write file %s, password: 0x%08x, size %u\n", slave_idx, filename, password, size);
+
+        ec_osal_mutex_take(global_cmd_master->scan_lock);
+        ret = ec_foe_write(global_cmd_master, slave_idx, &datagram, filename, password, hexdata, size);
+        ec_osal_mutex_give(global_cmd_master->scan_lock);
+
+        if (ret < 0) {
+            EC_LOG_RAW("Slave %u foe_write failed: %d\n", slave_idx, ret);
+        } else {
+            EC_LOG_RAW("Slave %u foe write success\n", slave_idx);
+        }
+
+        ec_datagram_clear(&datagram);
+        return 0;
+    } else if (argc >= 6 && strcmp(argv[1], "foe_read") == 0) {
+        // ethercat foe_read -p [slave_idx] [filename] [password]
+        uint8_t hexdata[256];
+        uint32_t size;
+        uint32_t slave_idx = atoi(argv[3]);
+        const char *filename = argv[4];
+        uint32_t password = strtoul(argv[5], NULL, 16);
+
+        EC_LOG_RAW("Slave %u foe read file %s, password: 0x%08x\n", slave_idx, filename, password);
+
+        static ec_datagram_t datagram;
+
+        ec_datagram_init(&datagram, 1024);
+
+        ec_osal_mutex_take(global_cmd_master->scan_lock);
+        ret = ec_foe_read(global_cmd_master, slave_idx, &datagram, filename, password, hexdata, sizeof(hexdata), &size);
+        ec_osal_mutex_give(global_cmd_master->scan_lock);
+
+        if (ret < 0) {
+            EC_LOG_RAW("Slave %u foe_read failed: %d\n", slave_idx, ret);
+        } else {
+            ec_hexdump(hexdata, size);
+        }
+
+        ec_datagram_clear(&datagram);
+        return 0;
+    }
+#endif
+#ifdef CONFIG_EC_EOE
+    else if (argc >= 4 && strcmp(argv[1], "eoe_start") == 0) {
+        // ethercat eoe_start -p [slave_idx]
+        struct ec_eoe_ip_param slave_ip_param = { 0 };
+        struct ec_eoe_ip_param master_ip_param = { 0 };
+
+        slave_ip_param.ipv4_addr_str = "192.168.100.10";
+        slave_ip_param.ipv4_mask_str = "255.255.255.0";
+        slave_ip_param.ipv4_gw_str = "192.168.100.1";
+        slave_ip_param.dns_server_str = "192.168.2.1";
+
+        for (uint8_t i = 0; i < 6; i++) {
+            slave_ip_param.mac_addr[i] = i + 0xf0;
+        }
+
+        master_ip_param.ipv4_addr_str = "192.168.100.8";
+        master_ip_param.ipv4_mask_str = "255.255.255.0";
+        master_ip_param.ipv4_gw_str = "192.168.100.1";
+
+        for (uint8_t i = 0; i < 6; i++) {
+            master_ip_param.mac_addr[i] = i;
+        }
+        ret = ec_eoe_start(global_cmd_eoe, global_cmd_master, atoi(argv[3]), &master_ip_param, &slave_ip_param);
+        if (ret < 0) {
+            EC_LOG_RAW("eoe start failed: %d\n", ret);
+        } else {
+            EC_LOG_RAW("eoe start success\n");
+        }
+        return 0;
+    }
+#endif
+    else if (argc >= 3 && strcmp(argv[1], "timediff") == 0) {
         if (strcmp(argv[2], "-s") == 0) {
             uintptr_t flags;
 

@@ -20,17 +20,18 @@
 #include "ec_def.h"
 #include "ec_osal.h"
 #include "ec_port.h"
+#include "ec_perf.h"
+#include "ec_timestamp.h"
+#include "ec_version.h"
 #include "ec_datagram.h"
 #include "ec_common.h"
 #include "ec_sii.h"
 #include "ec_slave.h"
 #include "ec_mailbox.h"
 #include "ec_coe.h"
+#include "ec_foe.h"
+#include "ec_eoe.h"
 #include "ec_cmd.h"
-#include "ec_perf.h"
-#include "ec_version.h"
-
-#define jiffies ec_htimer_get_time_us()
 
 /** Netdev statistics.
  */
@@ -74,7 +75,8 @@ typedef struct {
     uint8_t *send_buffer;
 #endif
     uint32_t expected_working_counter;
-} ec_cyclic_datagram_t;
+    ec_slave_t *slave;
+} ec_pdo_datagram_t;
 
 typedef struct ec_master {
     uint8_t index;
@@ -85,19 +87,19 @@ typedef struct ec_master {
     ec_netdev_stats_t netdev_stats;
     ec_stats_t stats;
     ec_master_phase_t phase;
-    bool active;    /**< Master is started. */
-    bool scan_done; /**< Slave scan is done. */
+    bool active;         /**< Master is started. */
+    bool scan_done;      /**< Slave scan is done. */
+    bool rescan_request; /**< Rescan requested. */
 
     ec_datagram_t main_datagram; /**< Main datagram for slave scan & state change & config & sii */
 
-    ec_dlist_t datagram_queue;        /**< Queue of pending datagrams(internal use)*/
-    ec_dlist_t ext_datagram_queue;    /**< Queue of pending datagrams(external use)*/
-    ec_dlist_t cyclic_datagram_queue; /**< Queue of cyclic datagrams(internal use)*/
+    ec_dlist_t datagram_queue;     /**< Queue of pending datagrams*/
+    ec_dlist_t pdo_datagram_queue; /**< Queue of pdo datagrams*/
     uint8_t datagram_index;
 
     ec_slave_t *dc_ref_clock;                /**< DC reference clock slave. */
     ec_datagram_t dc_ref_sync_datagram;      /**< Datagram used for synchronizing the reference clock to the master clock. */
-    ec_datagram_t dc_all_sync_datagram;      /**< Datagram used for synchronizing all slaves to the master clock. */
+    ec_datagram_t dc_all_sync_datagram;      /**< Datagram used for synchronizing all slaves to the dc ref clock. */
     ec_datagram_t systime_diff_mon_datagram; /**< Datagram used for reading the system time difference between master and reference clock. */
 
     uint32_t min_systime_diff;
@@ -121,6 +123,7 @@ typedef struct ec_master {
     ec_osal_thread_t nonperiod_thread;
     ec_osal_sem_t nonperiod_sem;
     struct ec_osal_timer *linkdetect_timer;
+    bool nonperiod_suspend;
 
     uint8_t pdo_buffer[CONFIG_EC_MAX_NETDEVS][CONFIG_EC_MAX_PDO_BUFSIZE];
     uint32_t actual_pdo_size;

@@ -6,12 +6,15 @@
 #ifndef EC_NETDEV_H
 #define EC_NETDEV_H
 
+#include "phy/chry_phy.h"
+
 typedef struct ec_master ec_master_t;
 
 typedef struct ec_netdev {
     ec_master_t *master;
-    uint8_t index;
-    char name[20];
+    struct chry_phy_device phydev;
+    ec_netdev_index_t index;
+    char name[24];
     uint8_t mac_addr[6];
     bool link_state;
     uint8_t tx_frame_index;
@@ -38,12 +41,9 @@ void ec_netdev_clear_stats(ec_netdev_t *netdev);
 void ec_netdev_update_stats(ec_netdev_t *netdev);
 
 ec_netdev_t *ec_netdev_init(uint8_t netdev_index);
-void ec_netdev_enable_irq(ec_netdev_t *netdev, bool enable);
-bool ec_netdev_get_link_state(ec_netdev_t *netdev);
+void ec_netdev_poll_link_state(ec_netdev_t *netdev);
 uint8_t *ec_netdev_get_txbuf(ec_netdev_t *netdev);
 int ec_netdev_send(ec_netdev_t *netdev, uint32_t size);
 void ec_netdev_receive(ec_netdev_t *netdev, uint8_t *frame, uint32_t size);
-void ec_netdev_poll(ec_netdev_t *netdev);
-void ec_netdev_trigger_poll(ec_netdev_t *netdev);
 
 #endif

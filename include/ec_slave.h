@@ -3,11 +3,13 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#ifndef EC_SALVE_H
-#define EC_SALVE_H
+#ifndef EC_SLAVE_H
+#define EC_SLAVE_H
 
 typedef struct ec_master ec_master_t;
 typedef struct ec_slave ec_slave_t;
+
+typedef void (*ec_pdo_callback_t)(ec_slave_t *slave, uint8_t *output, uint8_t *input);
 
 typedef struct
 {
@@ -30,6 +32,7 @@ typedef struct {
 typedef struct {
     ec_sync_info_t *sync;                           /**< Sync manager configuration. */
     uint8_t sync_count;                             /**< Number of sync managers. */
+    ec_pdo_callback_t pdo_callback;                 /**< PDO process data callback. */
     uint16_t dc_assign_activate;                    /**< dc assign control */
     ec_sync_signal_t dc_sync[EC_SYNC_SIGNAL_COUNT]; /**< DC sync signals. */
 } ec_slave_config_t;
@@ -95,13 +98,14 @@ typedef struct ec_slave {
     uint32_t odata_size;
     uint32_t idata_size;
     uint32_t expected_working_counter;
+    uint32_t actual_working_counter;
 
     uint16_t *sii_image; /**< Complete SII image. */
     size_t sii_nwords;   /**< Size of the SII contents in words. */
 
     ec_sii_t sii; /**< Extracted SII data. */
 
-    ec_sm_info_t sm_info[EC_MAX_SYNC_MANAGERS];
+    ec_sm_info_t *sm_info;
     uint8_t sm_count; /**< Number of sync managers. */
 
     ec_slave_config_t *config; /**< Slave custom configuration. */

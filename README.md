@@ -11,7 +11,7 @@ CherryECAT is a tiny and beautiful, high real-time and low-jitter EtherCAT maste
 
 ## Feature
 
-- ~ 4K ram, ~32K flash(24K + 8K shell cmd + debug log)
+- ~ 4K ram, ~40K flash(24K + 16K shell cmd, including log)
 - Asynchronous queue-based transfer (one transfer can carry multiple datagrams)
 - Zero-copy technology: directly use enet tx/rx buffer to fill and parse ethercat data
 - Support hot-plugging
@@ -25,23 +25,26 @@ CherryECAT is a tiny and beautiful, high real-time and low-jitter EtherCAT maste
 - Support Slave SII access
 - Support Slave register access
 - Support multi master
-- Support backup redundancy
-- Minimum PDO cyclic time < 40 us (depends on master and slave hardware)
-- Support multi cyclic time(every slave can use different proportional cyclic time)
+- **Support backup redundancy(TODO)**
+- **Minimum PDO cyclic time < 40 us (depends on master and slave hardware)**
+- **DC jitter < 3us (depends on master and slave hardware)**
+- **Support multi cyclic time(every slave can use different proportional cyclic time)**
 - Support ethercat cmd with shell, ref to IgH
+
+The pic shows dc jitter < 3us (hpm6800evk with flash_xip):
+![ethercat](docs/assets/ethercat_dc.png)
 
 ## Hardware limitations
 
 - **Master**
-	- CPU (cache > 16K, memcpy speed > 100MB/s)
+	- CPU (**Coremark/Mhz > 5.0**, cache > 16K, **memcpy speed > 100MB/s**)
 	- ENET must support descriptor dma and iperf with lwip > 90 Mbps
-	- Code must run in ram, ignore if no dc
 	- Must support High-Precision Timer (jitter < 1us)
-	- Must support High-Precision timestamp (like ARM DWT)
+	- Must support High-Precision timestamp (ARM DWT/RISC-V MCYCLE)
 	- Must support long long print
 
 - **Slave**
-	- Must support COE
+	- Must support DC and system time
 	- Must support sdo complete access
 	- SII must have sync manager information
 
@@ -55,6 +58,8 @@ CherryECAT is a tiny and beautiful, high real-time and low-jitter EtherCAT maste
 ![ethercat](docs/assets/ethercat5.png)
 ![ethercat](docs/assets/ethercat6.png)
 ![ethercat](docs/assets/ethercat7.png)
+![ethercat](docs/assets/ethercat8.png)
+![ethercat](docs/assets/ethercat9.png)
 
 ## Tool
 
@@ -99,6 +104,7 @@ Generating C code...
 ## Support Boards
 
 - HPM6750EVK2/HPM6800EVK/**HPM5E00EVK**(hybrid internal)
+- RT-Thread RZN2L-EtherKit/RA8P1 Titan Board
 
 ## Contact
 
@@ -106,4 +112,4 @@ QQ group: 563650597
 
 ## License
 
-FOE,EOE and Backup redundancy features are available for commercial charge; other are free to use
+FOE, EOE and backup redundancy features are available in **Royalty-Free**; other are free to use
