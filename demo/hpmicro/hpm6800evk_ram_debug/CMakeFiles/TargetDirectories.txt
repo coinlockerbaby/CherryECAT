@@ -54,5 +54,5 @@ C:/Env/cherryECAT/CherryECAT/demo/hpmicro/hpm6800evk_ram_debug/build_tmp/middlew
 C:/Env/cherryECAT/CherryECAT/demo/hpmicro/hpm6800evk_ram_debug/build_tmp/middleware/cherryrb/CMakeFiles/rebuild_cache.dir
 C:/Env/cherryECAT/CherryECAT/demo/hpmicro/hpm6800evk_ram_debug/build_tmp/middleware/wifi/CMakeFiles/edit_cache.dir
 C:/Env/cherryECAT/CherryECAT/demo/hpmicro/hpm6800evk_ram_debug/build_tmp/middleware/wifi/CMakeFiles/rebuild_cache.dir
-C:/Env/cherryECAT/CherryECAT/demo/hpmicro/hpm6800evk_ram_debug/cherryec/CMakeFiles/edit_cache.dir
-C:/Env/cherryECAT/CherryECAT/demo/hpmicro/hpm6800evk_ram_debug/cherryec/CMakeFiles/rebuild_cache.dir
+C:/Env/cherryECAT/CherryECAT/demo/hpmicro/hpm6800evk_ram_debug/cherryecat/CMakeFiles/edit_cache.dir
+C:/Env/cherryECAT/CherryECAT/demo/hpmicro/hpm6800evk_ram_debug/cherryecat/CMakeFiles/rebuild_cache.dir

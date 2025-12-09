@@ -40,7 +40,7 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("C:/Env/cherryECAT/CherryECAT/demo/hpmicro/hpm6800evk_ram_debug/build_tmp/cmake_install.cmake")
-  include("C:/Env/cherryECAT/CherryECAT/demo/hpmicro/hpm6800evk_ram_debug/cherryec/cmake_install.cmake")
+  include("C:/Env/cherryECAT/CherryECAT/demo/hpmicro/hpm6800evk_ram_debug/cherryecat/cmake_install.cmake")
 
 endif()
 

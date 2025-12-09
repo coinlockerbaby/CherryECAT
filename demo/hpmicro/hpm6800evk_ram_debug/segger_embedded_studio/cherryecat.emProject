@@ -1,6 +1,6 @@
 <!DOCTYPE CrossStudio_Project_File>
-<solution Name="cherryec" target="20" version="2">
-  <project Name="cherryec - hpm6800evk">
+<solution Name="cherryecat" target="20" version="2">
+  <project Name="cherryecat - hpm6800evk">
     <configuration
       Name="Common"
       LIBRARY_IO_TYPE="STD"
@@ -74,6 +74,12 @@
             <file file_name="..\..\..\..\src\ec_datagram.c">
               <configuration Name="Common" build_object_file_name="$(IntDir)/ec_datagram.c$(OBJ)" />
             </file>
+            <file file_name="..\..\..\..\src\ec_eoe.c">
+              <configuration Name="Common" build_object_file_name="$(IntDir)/ec_eoe.c$(OBJ)" />
+            </file>
+            <file file_name="..\..\..\..\src\ec_foe.c">
+              <configuration Name="Common" build_object_file_name="$(IntDir)/ec_foe.c$(OBJ)" />
+            </file>
             <file file_name="..\..\..\..\src\ec_mailbox.c">
               <configuration Name="Common" build_object_file_name="$(IntDir)/ec_mailbox.c$(OBJ)" />
             </file>
@@ -92,6 +98,15 @@
             <file file_name="..\..\..\..\src\ec_slave.c">
               <configuration Name="Common" build_object_file_name="$(IntDir)/ec_slave.c$(OBJ)" />
             </file>
+            <file file_name="..\..\..\..\src\ec_timestamp.c">
+              <configuration Name="Common" build_object_file_name="$(IntDir)/ec_timestamp.c$(OBJ)" />
+            </file>
+            <folder Name="phy">
+              <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/application/Env/cherryECAT/CherryECAT/src/phy"/>
+              <file file_name="..\..\..\..\src\phy\chry_phy.c">
+                <configuration Name="Common" build_object_file_name="$(IntDir)/chry_phy.c$(OBJ)" />
+              </file>
+            </folder>
           </folder>
           <folder Name="osal">
             <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/application/Env/cherryECAT/CherryECAT/osal"/>
@@ -101,8 +116,8 @@
           </folder>
           <folder Name="port">
             <configuration Name="Common" build_intermediate_directory="Output/$(Configuration)/Obj/$(ProjectName)/application/Env/cherryECAT/CherryECAT/port"/>
-            <file file_name="..\..\..\..\port\netdev_hpm.c">
-              <configuration Name="Common" build_object_file_name="$(IntDir)/netdev_hpm.c$(OBJ)" />
+            <file file_name="..\..\..\..\port\netdev_hpmicro.c">
+              <configuration Name="Common" build_object_file_name="$(IntDir)/netdev_hpmicro.c$(OBJ)" />
             </file>
           </folder>
         </folder>
